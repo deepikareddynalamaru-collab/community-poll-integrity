@@ -1,5 +1,4 @@
 const express = require('express');
-const Poll = require('../models/Poll');
 const { z } = require('zod');
 const {
   createPoll,
@@ -8,6 +7,7 @@ const {
   getPollById,
   votePoll,
   getPollResults,
+  closePoll,
 } = require('../controllers/poll.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const { validate, objectIdSchema } = require('../middleware/validate.middleware');
@@ -66,17 +66,7 @@ router.post('/:id/vote', validate({ params: pollIdParamsSchema, body: voteBodySc
 // Get closed poll results (locked with 403 when open)
 router.get('/:id/results', validate({ params: pollIdParamsSchema }), getPollResults);
 
-router.patch('/:id/close', async (req, res) => {
-  const poll = await Poll.findById(req.params.id);
-  if (!poll) return res.status(404).json({ message: 'Poll not found' });
-  const userId = req.user._id ? req.user._id.toString() : req.user.id?.toString();
-  if (poll.createdBy.toString() !== userId)
-    return res.status(403).json({ message: 'Only the creator can end this poll' });
-  poll.closesAt = new Date();
-  await poll.save();
-  res.json(poll);
-});
-
-
+// End poll early (creator only)
+router.patch('/:id/close', validate({ params: pollIdParamsSchema }), closePoll);
 
 module.exports = router;

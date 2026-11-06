@@ -330,5 +330,53 @@ describe('Milestone 2: Poll Creation, Listing, Detail & Eligibility Logic', () =
       expect(res.body.error.code).toBe('POLL_NOT_FOUND');
     });
   });
+
+  describe('PATCH /api/polls/:id/close (End Poll)', () => {
+    it('should allow the poll creator to end an open poll', async () => {
+      const poll = await Poll.create({
+        title: 'Endable Poll',
+        options: [{ text: 'Yes' }, { text: 'No' }],
+        closesAt: new Date(Date.now() + 100000),
+        createdBy: user.id,
+      });
+
+      const res = await request(app)
+        .patch(`/api/polls/${poll._id}/close`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.poll.status).toBe('closed');
+
+      const updated = await Poll.findById(poll._id);
+      expect(new Date(updated.closesAt) <= new Date()).toBe(true);
+    });
+
+    it('should prevent a non-creator from ending the poll with 403', async () => {
+      const poll = await Poll.create({
+        title: 'Alice Protected Poll',
+        options: [{ text: 'Option 1' }, { text: 'Option 2' }],
+        closesAt: new Date(Date.now() + 100000),
+        createdBy: user.id,
+      });
+
+      // Bob tries to end Alice's poll
+      const res = await request(app)
+        .patch(`/api/polls/${poll._id}/close`)
+        .set('Authorization', `Bearer ${otherToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('NOT_POLL_CREATOR');
+    });
+
+    it('should return 404 when attempting to end a non-existent poll', async () => {
+      const fakeId = '507f1f77bcf86cd799439011';
+      const res = await request(app)
+        .patch(`/api/polls/${fakeId}/close`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('POLL_NOT_FOUND');
+    });
+  });
 });
 

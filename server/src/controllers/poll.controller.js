@@ -259,6 +259,37 @@ const getPollResults = async (req, res, next) => {
   }
 };
 
+const closePoll = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const poll = await Poll.findById(id);
+
+    if (!poll) {
+      throw new NotFoundError('Poll not found', 'POLL_NOT_FOUND');
+    }
+
+    const userId = req.user._id ? req.user._id.toString() : req.user.id?.toString();
+    if (poll.createdBy.toString() !== userId) {
+      throw new ForbiddenError('Only the creator can end this poll', 'NOT_POLL_CREATOR');
+    }
+
+    poll.closesAt = new Date();
+    await poll.save();
+
+    res.status(200).json({
+      message: 'Poll ended successfully',
+      poll: {
+        id: poll._id,
+        title: poll.title,
+        status: 'closed',
+        closesAt: poll.closesAt,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createPoll,
   getPolls,
@@ -266,4 +297,5 @@ module.exports = {
   getPollById,
   votePoll,
   getPollResults,
+  closePoll,
 };
