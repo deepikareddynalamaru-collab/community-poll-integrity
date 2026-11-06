@@ -56,6 +56,10 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/polls', pollRoutes);
 
+// Fallback aliases for requests made without the /api prefix
+app.use('/auth', authRoutes);
+app.use('/polls', pollRoutes);
+
 // Catch-all for undefined routes (before error middleware)
 app.use((req, res, next) => {
   next(new NotFoundError(`Cannot ${req.method} ${req.originalUrl}`, 'ROUTE_NOT_FOUND'));

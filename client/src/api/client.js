@@ -1,5 +1,12 @@
-const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const API_BASE_URL = rawBase.replace(/\/+$/, '');
+const resolveBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const rawBase = envUrl && typeof envUrl === 'string' && envUrl.trim()
+    ? envUrl.trim()
+    : 'http://localhost:5000/api';
+  return rawBase.replace(/\/+$/, '');
+};
+
+const API_BASE_URL = resolveBaseUrl();
 
 let memoryToken = localStorage.getItem('poll_token') || null;
 
@@ -20,12 +27,15 @@ export const apiRequest = async (endpoint, options = {}) => {
   // Ensure endpoint starts with a slash
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
-  // Prevent duplicate /api if endpoint accidentally includes it
-  const finalEndpoint = API_BASE_URL.endsWith('/api') && cleanEndpoint.startsWith('/api/')
-    ? cleanEndpoint.slice(4)
-    : cleanEndpoint;
+  // Ensure /api is present in the final path without duplication
+  let finalPath = cleanEndpoint;
+  if (API_BASE_URL.endsWith('/api') && cleanEndpoint.startsWith('/api/')) {
+    finalPath = cleanEndpoint.slice(4); // Avoid duplicate /api/api/...
+  } else if (!API_BASE_URL.endsWith('/api') && !cleanEndpoint.startsWith('/api/')) {
+    finalPath = `/api${cleanEndpoint}`; // Guarantee /api prefix is present
+  }
 
-  const url = `${API_BASE_URL}${finalEndpoint}`;
+  const url = `${API_BASE_URL}${finalPath}`;
   const token = getAuthToken();
 
   const headers = {
