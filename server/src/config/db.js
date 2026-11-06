@@ -1,0 +1,29 @@
+const mongoose = require('mongoose');
+
+let mongoMemoryServer = null;
+
+const connectDB = async () => {
+  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/poll_integrity';
+
+  try {
+    // Attempt connecting to the configured MongoDB URI with a short timeout
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 2000 });
+    console.log(`MongoDB connected: ${mongoose.connection.host}`);
+  } catch (primaryError) {
+    console.warn(`Could not connect to external MongoDB at ${mongoUri}.`);
+    console.warn('Falling back to MongoMemoryServer for development...');
+
+    try {
+      const { MongoMemoryServer } = require('mongodb-memory-server');
+      mongoMemoryServer = await MongoMemoryServer.create();
+      const inMemoryUri = mongoMemoryServer.getUri();
+      await mongoose.connect(inMemoryUri);
+      console.log(`Connected to in-memory MongoDB at ${inMemoryUri}`);
+    } catch (fallbackError) {
+      console.error('Failed to start in-memory MongoDB:', fallbackError.message);
+      process.exit(1);
+    }
+  }
+};
+
+module.exports = connectDB;

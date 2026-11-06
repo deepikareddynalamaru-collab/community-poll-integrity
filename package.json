@@ -1,0 +1,16 @@
+{
+  "name": "community-poll-integrity",
+  "version": "1.0.0",
+  "description": "Transparent Community Polling with Database-Enforced Integrity",
+  "scripts": {
+    "test": "cd server && npm test",
+    "start": "cd server && npm start",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build"
+  },
+  "keywords": ["polling", "mongodb", "react", "express", "voting-integrity"],
+  "author": "",
+  "license": "ISC"
+}
+
