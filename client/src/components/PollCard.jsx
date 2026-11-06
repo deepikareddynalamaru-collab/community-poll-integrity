@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from './StatusBadge';
 
-export const PollCard = ({ poll }) => {
+export const PollCard = ({ poll, onEndPoll }) => {
   const isOpen = poll.status === 'open';
   const closesDate = new Date(poll.closesAt);
   const formattedClosesAt = closesDate.toLocaleString(undefined, {
@@ -55,6 +55,15 @@ export const PollCard = ({ poll }) => {
           <Link to={`/polls/${poll.id}/results`} className="btn btn-primary btn-sm">
             View Final Results
           </Link>
+        )}
+        {isOpen && onEndPoll && (
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => onEndPoll(poll.id)}
+          >
+            End poll
+          </button>
         )}
       </div>
     </div>

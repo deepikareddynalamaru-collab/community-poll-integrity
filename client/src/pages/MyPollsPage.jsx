@@ -8,23 +8,36 @@ export const MyPollsPage = () => {
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  const fetchMyPolls = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await pollApi.getMyPolls();
+      setPolls(data.polls || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load your polls');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMyPolls = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await pollApi.getMyPolls();
-        setPolls(data.polls || []);
-      } catch (err) {
-        setError(err.message || 'Failed to load your polls');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMyPolls();
   }, []);
+
+  const handleEndPoll = async (pollId) => {
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      await pollApi.closePoll(pollId);
+      setSuccessMessage('Poll has been ended successfully.');
+      await fetchMyPolls();
+    } catch (err) {
+      setError(err.message || 'Failed to end poll');
+    }
+  };
 
   return (
     <div>
@@ -40,6 +53,7 @@ export const MyPollsPage = () => {
         </Link>
       </div>
 
+      <Alert type="success" message={successMessage} onClose={() => setSuccessMessage(null)} />
       <Alert type="danger" message={error} onClose={() => setError(null)} />
 
       {loading ? (
@@ -59,11 +73,10 @@ export const MyPollsPage = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {polls.map((poll) => (
-            <PollCard key={poll.id} poll={poll} />
+            <PollCard key={poll.id} poll={poll} onEndPoll={handleEndPoll} />
           ))}
         </div>
       )}
     </div>
   );
 };
-
