@@ -98,6 +98,67 @@ describe('Milestone 1: Authentication API & JWT Middleware', () => {
     });
   });
 
+  describe('POST /api/auth/reset-password', () => {
+    beforeEach(async () => {
+      await request(app).post('/api/auth/register').send(validUser);
+    });
+
+    it('should reset password successfully and allow login with new password', async () => {
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: validUser.email,
+          newPassword: 'newSecretPassword123',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toContain('Password reset successfully');
+
+      // Old password should fail
+      const oldLoginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: validUser.email,
+          password: validUser.password,
+        });
+      expect(oldLoginRes.status).toBe(401);
+
+      // New password should succeed
+      const newLoginRes = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: validUser.email,
+          password: 'newSecretPassword123',
+        });
+      expect(newLoginRes.status).toBe(200);
+      expect(newLoginRes.body).toHaveProperty('token');
+    });
+
+    it('should reject reset for non-existent email with 404', async () => {
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: 'nonexistent@example.com',
+          newPassword: 'validPassword123',
+        });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('USER_NOT_FOUND');
+    });
+
+    it('should reject reset with password under 6 characters with 400', async () => {
+      const res = await request(app)
+        .post('/api/auth/reset-password')
+        .send({
+          email: validUser.email,
+          newPassword: '123',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+  });
+
   describe('JWT Auth Middleware (GET /api/auth/me)', () => {
     it('should reject request without Authorization header with 401', async () => {
       const res = await request(app).get('/api/auth/me');

@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { PollListPage } from './pages/PollListPage';
 import { PollDetailPage } from './pages/PollDetailPage';
 import { CreatePollPage } from './pages/CreatePollPage';
@@ -23,6 +24,7 @@ export const App = () => {
               {/* Public Routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
               {/* Protected Routes */}
               <Route
@@ -78,4 +80,3 @@ export const App = () => {
 };
 
 export default App;
-

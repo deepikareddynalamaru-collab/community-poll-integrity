@@ -13,9 +13,14 @@ export const authApi = {
       body: { email, password },
     }),
 
+  resetPassword: (email, newPassword) =>
+    apiRequest('/auth/reset-password', {
+      method: 'POST',
+      body: { email, newPassword },
+    }),
+
   getMe: () =>
     apiRequest('/auth/me', {
       method: 'GET',
     }),
 };
-

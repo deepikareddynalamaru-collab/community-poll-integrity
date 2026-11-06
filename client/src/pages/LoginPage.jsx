@@ -56,7 +56,12 @@ export const LoginPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password">Password</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="form-label" htmlFor="password">Password</label>
+              <Link to="/forgot-password" style={{ fontSize: '0.8125rem' }}>
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
@@ -86,4 +91,3 @@ export const LoginPage = () => {
     </div>
   );
 };
-

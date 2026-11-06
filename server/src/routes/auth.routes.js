@@ -1,6 +1,6 @@
 const express = require('express');
 const { z } = require('zod');
-const { register, login, getMe } = require('../controllers/auth.controller');
+const { register, login, resetPassword, getMe } = require('../controllers/auth.controller');
 const { validate } = require('../middleware/validate.middleware');
 const authMiddleware = require('../middleware/auth.middleware');
 
@@ -17,8 +17,14 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+const resetPasswordSchema = z.object({
+  email: z.string().trim().email('Invalid email address'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters').max(100, 'Password is too long'),
+});
+
 router.post('/register', validate({ body: registerSchema }), register);
 router.post('/login', validate({ body: loginSchema }), login);
+router.post('/reset-password', validate({ body: resetPasswordSchema }), resetPassword);
 router.get('/me', authMiddleware, getMe);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { ConflictError, UnauthorizedError } = require('../utils/errors');
+const { ConflictError, UnauthorizedError, NotFoundError } = require('../utils/errors');
 
 const generateToken = (user) => {
   const secret = process.env.JWT_SECRET || 'test_jwt_secret_key';
@@ -74,6 +74,28 @@ const login = async (req, res, next) => {
   }
 };
 
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      throw new NotFoundError('No account found with this email address', 'USER_NOT_FOUND');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({
+      message: 'Password reset successfully. You can now log in with your new password.',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getMe = async (req, res) => {
   res.status(200).json({
     user: {
@@ -87,5 +109,6 @@ const getMe = async (req, res) => {
 module.exports = {
   register,
   login,
+  resetPassword,
   getMe,
 };
