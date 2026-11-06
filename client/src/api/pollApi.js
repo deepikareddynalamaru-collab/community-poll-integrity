@@ -34,5 +34,10 @@ export const pollApi = {
     apiRequest(`/polls/${pollId}/results`, {
       method: 'GET',
     }),
+
+  closePoll: (pollId) =>
+    apiRequest(`/polls/${pollId}/close`, {
+      method: 'PATCH',
+    }),
 };
 

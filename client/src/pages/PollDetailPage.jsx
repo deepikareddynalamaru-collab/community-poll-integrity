@@ -56,6 +56,18 @@ export const PollDetailPage = () => {
     }
   };
 
+  const handleEndPoll = async () => {
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      await pollApi.closePoll(id);
+      setSuccessMessage('Poll has been ended successfully.');
+      await fetchPoll();
+    } catch (err) {
+      setError(err.message || 'Failed to end poll');
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading-box">
@@ -125,6 +137,17 @@ export const PollDetailPage = () => {
 
         <Alert type="success" message={successMessage} onClose={() => setSuccessMessage(null)} />
         <Alert type="danger" message={error} onClose={() => setError(null)} />
+
+        {isOpen && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleEndPoll}
+            style={{ marginBottom: '1rem' }}
+          >
+            End poll
+          </button>
+        )}
 
         {/* State Banners */}
         {hasVoted && (
