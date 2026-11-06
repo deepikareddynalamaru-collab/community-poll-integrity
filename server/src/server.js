@@ -4,10 +4,22 @@ const connectDB = require('./config/db');
 
 const PORT = process.env.PORT || 5000;
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 const startServer = async () => {
   await connectDB();
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+  });
+
+  server.on('error', (err) => {
+    console.error('Server error:', err);
   });
 };
 
@@ -16,4 +28,3 @@ if (require.main === module) {
 }
 
 module.exports = { app, startServer };
-

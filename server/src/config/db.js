@@ -1,3 +1,6 @@
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 const mongoose = require('mongoose');
 
 let mongoMemoryServer = null;
@@ -7,7 +10,7 @@ const connectDB = async () => {
 
   try {
     // Attempt connecting to the configured MongoDB URI with a short timeout
-    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 2000 });
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
     console.log(`MongoDB connected: ${mongoose.connection.host}`);
   } catch (primaryError) {
     console.warn(`Could not connect to external MongoDB at ${mongoUri}.`);

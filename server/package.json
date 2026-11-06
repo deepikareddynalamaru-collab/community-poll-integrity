@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "jest --runInBand --detectOpenHandles --forceExit"
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "seed": "node src/utils/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -28,4 +29,3 @@
     "testTimeout": 30000
   }
 }
-
