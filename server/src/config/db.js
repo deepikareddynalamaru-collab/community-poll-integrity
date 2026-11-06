@@ -13,7 +13,8 @@ const connectDB = async () => {
     await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
     console.log(`MongoDB connected: ${mongoose.connection.host}`);
   } catch (primaryError) {
-    console.warn(`Could not connect to external MongoDB at ${mongoUri}.`);
+    const sanitizedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
+    console.warn(`Could not connect to configured MongoDB (${sanitizedUri}): ${primaryError.message}`);
     console.warn('Falling back to MongoMemoryServer for development...');
 
     try {
