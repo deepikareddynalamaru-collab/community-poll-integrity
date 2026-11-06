@@ -7,21 +7,35 @@ const { NotFoundError } = require('./utils/errors');
 
 const app = express();
 
+const clientOrigins = (process.env.CLIENT_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  process.env.CLIENT_ORIGIN,
-].filter(Boolean);
+  ...clientOrigins,
+];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow non-browser requests (e.g. curl, server-to-server) or matched origins
-    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    // Allow non-browser requests (e.g. curl, server-to-server, health checks)
+    if (!origin) {
       return callback(null, true);
     }
-    return callback(null, true);
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    if (
+      allowedOrigins.includes('*') ||
+      allowedOrigins.includes(cleanOrigin) ||
+      cleanOrigin.startsWith('http://localhost:') ||
+      cleanOrigin.startsWith('http://127.0.0.1:')
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],

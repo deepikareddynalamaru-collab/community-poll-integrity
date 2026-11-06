@@ -14,7 +14,13 @@ const connectDB = async () => {
     console.log(`MongoDB connected: ${mongoose.connection.host}`);
   } catch (primaryError) {
     const sanitizedUri = mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
-    console.warn(`Could not connect to configured MongoDB (${sanitizedUri}): ${primaryError.message}`);
+    console.error(`Could not connect to configured MongoDB (${sanitizedUri}): ${primaryError.message}`);
+
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Fatal: In production mode (NODE_ENV=production), falling back to MongoMemoryServer is disabled. Exiting process.');
+      process.exit(1);
+    }
+
     console.warn('Falling back to MongoMemoryServer for development...');
 
     try {

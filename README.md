@@ -195,3 +195,38 @@ Common error codes:
 - `DUPLICATE_VOTE` (409)
 - `EMAIL_ALREADY_REGISTERED` (409)
 
+---
+
+## Deployment
+
+The application is architected for decoupled frontend and backend deployment across modern cloud platforms.
+
+### 1. Backend Deployment (Render / Railway / Fly.io / AWS)
+
+* **Root Directory**: `server`
+* **Build Command**: `npm install`
+* **Start Command**: `npm start` (executes `node src/server.js`)
+* **Environment Variables**:
+  | Variable | Value / Description |
+  |---|---|
+  | `NODE_ENV` | `production` |
+  | `PORT` | Auto-provided by platform (default `5000`) |
+  | `MONGO_URI` | MongoDB Atlas connection string (`mongodb+srv://...`) |
+  | `JWT_SECRET` | Strong, random string (at least 32 characters) |
+  | `CLIENT_ORIGIN` | Comma-separated list of allowed frontend origins (e.g., `https://my-poll-app.vercel.app`) |
+
+> **Production Database Safety**: In production mode (`NODE_ENV=production`), automatic fallback to `MongoMemoryServer` is strictly disabled. If `MONGO_URI` fails to connect, the server logs the connection error and terminates immediately to prevent running on an ephemeral database.
+
+### 2. Frontend Deployment (Vercel / Netlify)
+
+* **Root Directory**: `client`
+* **Build Command**: `npm run build`
+* **Output Directory**: `dist`
+* **Environment Variables**:
+  | Variable | Value / Description |
+  |---|---|
+  | `VITE_API_URL` | Full URL to your deployed API including `/api` (e.g. `https://my-backend.onrender.com/api`) |
+
+> **Single Page Application (SPA) Routing**: `client/vercel.json` contains the rewrite configuration redirecting all incoming paths to `/index.html`, ensuring React Router routes (such as `/polls/:id`, `/results/:id`, `/forgot-password`) work properly on hard reload.
+
+
