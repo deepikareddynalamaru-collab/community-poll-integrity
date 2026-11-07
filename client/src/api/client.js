@@ -57,10 +57,25 @@ export const apiRequest = async (endpoint, options = {}) => {
   try {
     response = await fetch(url, config);
   } catch (netErr) {
-    const error = new Error(`Network error connecting to ${url}: ${netErr.message}`);
-    error.status = 0;
-    error.code = 'NETWORK_ERROR';
-    throw error;
+    // If direct connection to localhost:5000 failed (e.g. browser port isolation on Windows),
+    // seamlessly retry via the local dev server proxy (/api/...)
+    const isLocal = url.startsWith('http://localhost:5000') || url.startsWith('http://127.0.0.1:5000');
+    if (isLocal) {
+      try {
+        const proxyUrl = url.replace(/^http:\/\/(localhost|127\.0\.0\.1):5000/, '');
+        response = await fetch(proxyUrl, config);
+      } catch (_) {
+        const error = new Error(`Network error connecting to ${url}: ${netErr.message}`);
+        error.status = 0;
+        error.code = 'NETWORK_ERROR';
+        throw error;
+      }
+    } else {
+      const error = new Error(`Network error connecting to ${url}: ${netErr.message}`);
+      error.status = 0;
+      error.code = 'NETWORK_ERROR';
+      throw error;
+    }
   }
 
   let data;
