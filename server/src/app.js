@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const pollRoutes = require('./routes/poll.routes');
 const errorMiddleware = require('./middleware/error.middleware');
@@ -51,6 +53,18 @@ app.use(express.json());
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Ensure database is connected (essential for serverless deployments e.g. Vercel)
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (err) {
+      return next(err);
+    }
+  }
+  next();
 });
 
 // Mount Routes

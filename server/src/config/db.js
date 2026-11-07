@@ -6,6 +6,9 @@ const mongoose = require('mongoose');
 let mongoMemoryServer = null;
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
   const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/poll_integrity';
 
   try {
